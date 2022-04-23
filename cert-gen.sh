@@ -13,25 +13,19 @@ KEY_PASSWORD="123456"
 # 秘钥库密码 (所有秘钥库使用同一密码)
 STORE_PASSWORD="123456"
 
-# 是否删除中间文件 (yes | no)
-REMOVE_MIDDLE_FILES="yes"
-
 # 是否打包最后结果 (yes | no)
 TAR_ALL="no"
 
 # ----------------------------------------------------------------------------------------------------------------------
-
-# 清空目录及压缩文件
-rm -rf ./root ./server ./client ./sign-req.cnf ./generated ./generated.tar.gz
 
 # 创建目录
 mkdir -p ./{root,server,client}
 
 cat <<"EOF" >./sign-req.cnf
 [req]
+prompt                      = no
 distinguished_name          = req_distinguished_name
 req_extensions              = req_ext
-prompt                      = no
 
 [req_distinguished_name]
 C                           = CN
@@ -58,30 +52,32 @@ EOF
 # CA Root
 # ----------------------------------------------------------------------------------------------------------------------
 
-# 私钥文件
-openssl genrsa \
-  -des3 \
-  -out ./root/ca.key \
-  -passout pass:"$KEY_PASSWORD" \
-  2048
+if [ ! -f ./root/ca.cert ] && [ ! -f ./root/ca.key ] && [ ! -f ./root/ca.csr ]; then
+  # 私钥文件
+  openssl genrsa \
+    -des3 \
+    -out ./root/ca.key \
+    -passout pass:"$KEY_PASSWORD" \
+    2048
 
-# 请求文件
-openssl req \
-  -new \
-  -out ./root/ca.csr \
-  -key ./root/ca.key \
-  -passin pass:"$KEY_PASSWORD" \
-  -config ./sign-req.cnf
+  # 请求文件
+  openssl req \
+    -new \
+    -out ./root/ca.csr \
+    -key ./root/ca.key \
+    -passin pass:"$KEY_PASSWORD" \
+    -config ./sign-req.cnf
 
-# 签名文件
-openssl x509 \
-  -req \
-  -in ./root/ca.csr \
-  -signkey ./root/ca.key \
-  -out ./root/ca.cert \
-  -CAcreateserial \
-  -passin pass:"$KEY_PASSWORD" \
-  -days "$EXPIRE_DAYS"
+  # 签名文件
+  openssl x509 \
+    -req \
+    -in ./root/ca.csr \
+    -signkey ./root/ca.key \
+    -out ./root/ca.cert \
+    -CAcreateserial \
+    -passin pass:"$KEY_PASSWORD" \
+    -days "$EXPIRE_DAYS"
+fi
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Sever Side
@@ -187,10 +183,8 @@ openssl pkcs12 \
 # 清理和打包
 # ----------------------------------------------------------------------------------------------------------------------
 
-if [ "$REMOVE_MIDDLE_FILES" == "yes" ]; then
-  rm -rf ./.srl
-  rm -rf ./sign-req.cnf
-fi
+rm -rf ./.srl
+rm -rf ./sign-req.cnf
 
 if [ "$TAR_ALL" == "yes" ]; then
   mkdir -p ./generated/
