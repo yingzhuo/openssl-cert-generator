@@ -22,34 +22,36 @@ TAR_ALL="no"
 # ----------------------------------------------------------------------------------------------------------------------
 
 # 清空目录及压缩文件
-rm -rf ./root ./server ./client ./sign-req.cnf ./generated ./generated.tgz
+rm -rf ./root ./server ./client ./sign-req.cnf ./generated ./generated.tar.gz
 
 # 创建目录
 mkdir -p ./{root,server,client}
 
 cat <<"EOF" >./sign-req.cnf
 [req]
-distinguished_name = req_distinguished_name
-req_extensions = req_ext
-prompt = no
+distinguished_name          = req_distinguished_name
+req_extensions              = req_ext
+prompt                      = no
 
 [req_distinguished_name]
-C   = CN
-ST  = Shanghai
-L   = Shanghai
-O   = Unknown
-OU  = Unknown
-CN  = Unknown
+C                           = CN
+ST                          = Shanghai
+L                           = Shanghai
+O                           = Unknown
+OU                          = Unknown
+CN                          = Unknown
 
 [req_ext]
-subjectAltName = @alt_names
+keyUsage                    = keyEncipherment, dataEncipherment, nonRepudiation, digitalSignature
+extendedKeyUsage            = serverAuth, clientAuth, codeSigning, emailProtection
+subjectAltName              = @alt_names
 
 [alt_names]
-IP.1 = 127.0.0.1
-IP.2 = 10.211.55.3
-IP.3 = 10.211.55.4
-IP.4 = 10.211.55.5
-DNS.1 = www.yingzhuo.com
+IP.1                        = 127.0.0.1
+IP.2                        = 10.211.55.3
+IP.3                        = 10.211.55.4
+IP.4                        = 10.211.55.5
+DNS.1                       = www.yingzhuo.com
 EOF
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -188,9 +190,6 @@ openssl pkcs12 \
 if [ "$REMOVE_MIDDLE_FILES" == "yes" ]; then
   rm -rf ./.srl
   rm -rf ./sign-req.cnf
-  rm -rf ./root/*.csr
-  rm -rf ./server/*.csr
-  rm -rf ./client/*.csr
 fi
 
 if [ "$TAR_ALL" == "yes" ]; then
@@ -198,8 +197,6 @@ if [ "$TAR_ALL" == "yes" ]; then
   cp -R ./root ./generated
   cp -R ./server ./generated
   cp -R ./client ./generated
-  tar -czf ./generated.tgz ./generated
+  tar -czf ./generated.tar.gz ./generated
   rm -rf ./generated ./root ./client ./server
 fi
-
-exit 0

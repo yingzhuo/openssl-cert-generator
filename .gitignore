@@ -3,3 +3,5 @@
 server/
 client/
 root/
+*.tar.gz
+*.tgz
