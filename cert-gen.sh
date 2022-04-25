@@ -36,8 +36,6 @@ OU                          = Unknown
 CN                          = Unknown
 
 [req_ext]
-keyUsage                    = keyEncipherment, dataEncipherment, nonRepudiation, digitalSignature
-extendedKeyUsage            = serverAuth, clientAuth, codeSigning, emailProtection
 subjectAltName              = @alt_names
 
 [alt_names]
@@ -119,6 +117,18 @@ openssl pkcs12 \
   -passout pass:"$STORE_PASSWORD" \
   -name "server"
 
+keytool \
+  -importkeystore \
+  -srckeystore ./server/server.keystore.p12 \
+  -srcstoretype pkcs12 \
+  -srcalias "server" \
+  -srcstorepass "$STORE_PASSWORD" \
+  -deststoretype pkcs12 \
+  -destkeystore ./server/server.keystore.jks \
+  -deststorepass "$STORE_PASSWORD" \
+  -destalias "server" \
+  -noprompt
+
 # 打包 (CA root)
 openssl pkcs12 \
   -export \
@@ -128,6 +138,18 @@ openssl pkcs12 \
   -passin pass:"$KEY_PASSWORD" \
   -passout pass:"$STORE_PASSWORD" \
   -name "CARoot"
+
+keytool \
+  -importkeystore \
+  -srckeystore ./server/server.truststore.p12 \
+  -srcstoretype pkcs12 \
+  -srcalias "CARoot" \
+  -srcstorepass "$STORE_PASSWORD" \
+  -deststoretype pkcs12 \
+  -destkeystore ./server/server.truststore.jks \
+  -deststorepass "$STORE_PASSWORD" \
+  -destalias "CARoot" \
+  -noprompt
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Client Side
@@ -169,6 +191,18 @@ openssl pkcs12 \
   -passout pass:"$STORE_PASSWORD" \
   -name "client"
 
+keytool \
+  -importkeystore \
+  -srckeystore ./client/client.keystore.p12 \
+  -srcstoretype pkcs12 \
+  -srcalias "client" \
+  -srcstorepass "$STORE_PASSWORD" \
+  -deststoretype pkcs12 \
+  -destkeystore ./client/client.keystore.jks \
+  -deststorepass "$STORE_PASSWORD" \
+  -destalias "client" \
+  -noprompt
+
 # 打包 (CA root)
 openssl pkcs12 \
   -export \
@@ -178,6 +212,18 @@ openssl pkcs12 \
   -passin pass:"$KEY_PASSWORD" \
   -passout pass:"$STORE_PASSWORD" \
   -name "CARoot"
+
+keytool \
+  -importkeystore \
+  -srckeystore ./client/client.truststore.p12 \
+  -srcstoretype pkcs12 \
+  -srcalias "CARoot" \
+  -srcstorepass "$STORE_PASSWORD" \
+  -deststoretype pkcs12 \
+  -destkeystore ./client/client.truststore.jks \
+  -deststorepass "$STORE_PASSWORD" \
+  -destalias "CARoot" \
+  -noprompt
 
 # ----------------------------------------------------------------------------------------------------------------------
 # 清理和打包
