@@ -4,6 +4,27 @@
 
 set -e
 
+IP_ADDRESS_LIST=("10.211.55.3" "10.211.55.4" "10.211.55.5")
+DNS_NAME_LIST=("yingzhuo.com" "www.yingzhuo.com")
+
+# Common Name
+COMMON_NAME="Unknown"
+
+# 国家简称
+COUNTRY_NAME="CN"
+
+# 省或州
+STATE_OR_PROVINCE_NAME="Shanghai"
+
+# 精确地名
+LOCALITY_NAME="Shanghai"
+
+# 组织名
+ORGANIZATION_NAME="Unknown"
+
+# 组织单元名
+ORGANIZATIONAL_UNIT_NAME="Unknown"
+
 # 证书过期时间 (天)
 EXPIRE_DAYS="36500"
 
@@ -16,35 +37,40 @@ STORE_PASSWORD="123456"
 # 是否打包最后结果 (yes | no)
 TAR_ALL="no"
 
-# ----------------------------------------------------------------------------------------------------------------------
-
 # 创建目录
 mkdir -p ./{root,server,client}
 
-cat <<"EOF" >./sign-req.cnf
+cat <<EOF >./sign-req.cnf
 [req]
 prompt                      = no
 distinguished_name          = req_distinguished_name
 req_extensions              = req_ext
 
 [req_distinguished_name]
-C                           = CN
-ST                          = Shanghai
-L                           = Shanghai
-O                           = Unknown
-OU                          = Unknown
-CN                          = Unknown
+C                           = $COUNTRY_NAME
+ST                          = $STATE_OR_PROVINCE_NAME
+L                           = $LOCALITY_NAME
+O                           = $ORGANIZATION_NAME
+OU                          = $ORGANIZATIONAL_UNIT_NAME
+CN                          = $COMMON_NAME
 
 [req_ext]
 subjectAltName              = @alt_names
 
 [alt_names]
-IP.1                        = 127.0.0.1
-IP.2                        = 10.211.55.3
-IP.3                        = 10.211.55.4
-IP.4                        = 10.211.55.5
-DNS.1                       = www.yingzhuo.com
 EOF
+
+for i in "${!DNS_NAME_LIST[@]}"; do
+  iter="${DNS_NAME_LIST[$i]}"
+  pos=$(($i + 1))
+  echo "DNS.$pos = $iter" >>./sign-req.cnf
+done
+
+for i in "${!IP_ADDRESS_LIST[@]}"; do
+  iter="${IP_ADDRESS_LIST[$i]}"
+  pos=$(($i + 1))
+  echo "IP.$pos = $iter" >>./sign-req.cnf
+done
 
 # ----------------------------------------------------------------------------------------------------------------------
 # CA Root
@@ -230,7 +256,6 @@ keytool \
 # ----------------------------------------------------------------------------------------------------------------------
 
 rm -rf ./.srl
-rm -rf ./sign-req.cnf
 
 if [ "$TAR_ALL" == "yes" ]; then
   mkdir -p ./generated/

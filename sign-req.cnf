@@ -1,0 +1,22 @@
+[req]
+prompt                      = no
+distinguished_name          = req_distinguished_name
+req_extensions              = req_ext
+
+[req_distinguished_name]
+C                           = CN
+ST                          = Shanghai
+L                           = Shanghai
+O                           = Unknown
+OU                          = Unknown
+CN                          = Unknown
+
+[req_ext]
+subjectAltName              = @alt_names
+
+[alt_names]
+DNS.1 = yingzhuo.com
+DNS.2 = www.yingzhuo.com
+IP.1 = 10.211.55.3
+IP.2 = 10.211.55.4
+IP.3 = 10.211.55.5
